@@ -29,13 +29,12 @@ export const Customer = () => {
             } catch (err) {
                 console.error(
                     {
-                        sql,
                         errorMessage: err instanceof Error ? err.message : String(err),
                         errorStack: err instanceof Error ? err.stack : undefined
                     },
                     "Customer.getAll failed"
                 )
-                throw new Error(`Customer.getAll failed for sql: ${sql}`, {
+                throw new Error("Customer.getAll failed", {
                     cause: err instanceof Error ? err : undefined
                 })
             }
@@ -53,14 +52,12 @@ export const Customer = () => {
             } catch (err) {
                 console.error(
                     {
-                        sql,
-                        customerid: id,
                         errorMessage: err instanceof Error ? err.message : String(err),
                         errorStack: err instanceof Error ? err.stack : undefined
                     },
                     "Customer.getSingle failed"
                 )
-                throw new Error(`Customer.getSingle failed for customerid: ${id}`, {
+                throw new Error("Customer.getSingle failed", {
                     cause: err instanceof Error ? err : undefined
                 })
             }

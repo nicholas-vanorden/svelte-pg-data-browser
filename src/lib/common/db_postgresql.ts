@@ -70,15 +70,20 @@ export default PostgreSQL;
 // Singleton pattern - used to connect to the database ONCE throughout the entire life of the app
 export class DBInstance {
     private static pool: PgPool;
-    private static instance: DBInstance;
+    private static instance: DBInstance | undefined;
+    private static instancePromise: Promise<DBInstance> | undefined;
     private async initialize() {
         try {
+            const port = Number(SECRET_PGPORT);
+            if (!Number.isInteger(port) || port <= 0 || port > 65535) {
+                throw new Error("Invalid SECRET_PGPORT");
+            }
             DBInstance.pool = new Pool({
                 database: SECRET_PGDATABASE,
                 host: SECRET_PGHOST,
                 user: SECRET_PGUSER,
                 password: SECRET_PGPASSWORD,
-                port: Number(SECRET_PGPORT),
+                port: port,
                 idleTimeoutMillis: 15000,
                 connectionTimeoutMillis: 5000,
                 max: 50
@@ -89,11 +94,17 @@ export class DBInstance {
         }
     }
     public static getInstance = async (): Promise<DBInstance> => {
-        if (!DBInstance.instance) {
-            DBInstance.instance = new DBInstance();
-            await DBInstance.instance.initialize()
-        }
-        return DBInstance.instance;
+        if (DBInstance.instance) return DBInstance.instance;
+        DBInstance.instancePromise ??= (async () => {
+            const instance = new DBInstance();
+            await instance.initialize();
+            DBInstance.instance = instance;
+            return instance;
+        })().catch((err) => {
+            DBInstance.instancePromise = undefined;
+            throw err;
+        });
+        return DBInstance.instancePromise;
     };
     public getPool = async (): Promise<PgPool> => {
         return DBInstance.pool;
