@@ -3,7 +3,7 @@ import type { Pool as PgPool, PoolClient } from "pg";
 import pkg from 'pg';
 const {Pool} = pkg;
 
-import { SECRET_PGUSER, SECRET_PGPASSWORD, SECRET_PGHOST, SECRET_PGPORT, SECRET_PGDATABASE } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 
 type ErrorLogger = {
     error: (message?: unknown, ...optionalParams: unknown[]) => void;
@@ -74,22 +74,28 @@ export class DBInstance {
     private static instancePromise: Promise<DBInstance> | undefined;
     private async initialize() {
         try {
-            const port = Number(SECRET_PGPORT);
+            const port = Number(env.SECRET_PGPORT);
             if (!Number.isInteger(port) || port <= 0 || port > 65535) {
                 throw new Error("Invalid SECRET_PGPORT");
             }
             DBInstance.pool = new Pool({
-                database: SECRET_PGDATABASE,
-                host: SECRET_PGHOST,
-                user: SECRET_PGUSER,
-                password: SECRET_PGPASSWORD,
+                database: env.SECRET_PGDATABASE,
+                host: env.SECRET_PGHOST,
+                user: env.SECRET_PGUSER,
+                password: env.SECRET_PGPASSWORD,
                 port: port,
                 idleTimeoutMillis: 15000,
                 connectionTimeoutMillis: 5000,
                 max: 50
             })
         } catch (err) {
-            console.log(err)
+            processLogger.error(
+                {
+                    errorMessage: err instanceof Error ? err.message : String(err),
+                    errorStack: err instanceof Error ? err.stack : undefined
+                },
+                "Database initialization failed"
+            );
             throw new Error('Unable to connect to database')
         }
     }

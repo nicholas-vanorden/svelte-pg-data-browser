@@ -22,7 +22,7 @@ export const Customer = () => {
         },
         getAll: async (): Promise<Array<ICustomer>> => {
             const results: ICustomer[] = []
-            const sql = `select * from data.customers order by display_name`
+            const sql = `select customerid, display_name from data.customers order by display_name`
             let response: any
             try {
                 response = await PostgreSQL().query(sql)
@@ -45,7 +45,10 @@ export const Customer = () => {
             return results
         },
         getSingle: async (id: number): Promise<ICustomer | undefined> => {
-            const sql = `select * from data.customers where customerid = $1 `
+            if (!Number.isInteger(id) || id <= 0) {
+                return undefined;
+            }
+            const sql = `select customerid, display_name from data.customers where customerid = $1 `
             let response: any
             try {
                 response = await PostgreSQL().query(sql, [id])
