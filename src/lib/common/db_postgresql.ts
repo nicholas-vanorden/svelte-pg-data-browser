@@ -42,7 +42,6 @@ const PostgreSQL = () => {
         query: async (sql: string, params: any[] = []): Promise<any> => {
             const pool = await (await DBInstance.getInstance()).getPool();
             try{ 
-                //console.log(sql, params);
                 const res = await pool.query(sql, params);
                 return res;
             } catch (err) {
@@ -78,6 +77,12 @@ export class DBInstance {
             if (!Number.isInteger(port) || port <= 0 || port > 65535) {
                 throw new Error("Invalid SECRET_PGPORT");
             }
+            const requiredEnvVars = ['SECRET_PGDATABASE', 'SECRET_PGHOST', 'SECRET_PGUSER', 'SECRET_PGPASSWORD'] as const;
+            for (const varName of requiredEnvVars) {
+                if (!env[varName]) {
+                    throw new Error(`Missing required environment variable: ${varName}`);
+                }
+            }
             DBInstance.pool = new Pool({
                 database: env.SECRET_PGDATABASE,
                 host: env.SECRET_PGHOST,
@@ -112,10 +117,10 @@ export class DBInstance {
         });
         return DBInstance.instancePromise;
     };
-    public getPool = async (): Promise<PgPool> => {
+    public getPool = (): PgPool => {
         return DBInstance.pool;
     }
-    public getClient = async (): Promise<PoolClient> => {
+    public getClient = (): Promise<PoolClient> => {
         return DBInstance.pool.connect();
     }
 }

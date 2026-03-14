@@ -1,7 +1,7 @@
 import PostgreSQL from "$lib/common/db_postgresql"
 
 interface ICustomer {
-    customerid: number,
+    customerid: string,
     display_name: string,
 }
 interface ValidationError {
