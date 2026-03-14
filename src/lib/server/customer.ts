@@ -1,4 +1,4 @@
-import PostgreSQL from "$lib/common/db_postgresql"
+import PostgreSQL from "$lib/server/db_postgresql"
 
 interface ICustomer {
     customerid: string,
@@ -44,8 +44,8 @@ export const Customer = () => {
             }
             return results
         },
-        getSingle: async (id: number): Promise<ICustomer | undefined> => {
-            if (!Number.isInteger(id) || id <= 0) {
+        getSingle: async (id: string): Promise<ICustomer | undefined> => {
+            if (!id) {
                 return undefined;
             }
             const sql = `select customerid, display_name from data.customers where customerid = $1 `

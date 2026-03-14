@@ -1,4 +1,3 @@
-
 import type { Pool as PgPool, PoolClient } from "pg";
 import pkg from 'pg';
 const {Pool} = pkg;
@@ -30,17 +29,21 @@ const PostgreSQL = () => {
 
     const api = {
         checkConnection: async (): Promise<boolean> => {
-            const client = await (await DBInstance.getInstance()).getClient();
             try {
-                await client.query("SELECT 1");
-                return true;
-            } finally {
-                client.release();
+                const client = await (await DBInstance.getInstance()).getClient();
+                try {
+                    await client.query("SELECT 1");
+                    return true;
+                } finally {
+                    client.release();
+                }
+            } catch {
+                return false;
             }
         },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         query: async (sql: string, params: any[] = []): Promise<any> => {
-            const pool = await (await DBInstance.getInstance()).getPool();
+            const pool = (await DBInstance.getInstance()).getPool();
             try{ 
                 const res = await pool.query(sql, params);
                 return res;
