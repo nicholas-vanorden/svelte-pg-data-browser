@@ -1,0 +1,3 @@
+# default to no crawling until public routes are intentional
+User-agent: *
+Disallow: /
