@@ -23,20 +23,51 @@ export const Customer = () => {
         getAll: async (): Promise<Array<ICustomer>> => {
             const results: ICustomer[] = []
             const sql = `select * from data.customers order by display_name`
-            const response = await PostgreSQL().query(sql)
+            let response: any
+            try {
+                response = await PostgreSQL().query(sql)
+            } catch (err) {
+                console.error(
+                    {
+                        sql,
+                        errorMessage: err instanceof Error ? err.message : String(err),
+                        errorStack: err instanceof Error ? err.stack : undefined
+                    },
+                    "Customer.getAll failed"
+                )
+                throw new Error(`Customer.getAll failed for sql: ${sql}`, {
+                    cause: err instanceof Error ? err : undefined
+                })
+            }
             for(const row of response.rows){
                 const record = api.generateObject(row)
                 results.push(record)
             }
             return results
         },
-        getSingle: async (id: number): Promise<ICustomer | void> => {
+        getSingle: async (id: number): Promise<ICustomer | undefined> => {
             const sql = `select * from data.customers where customerid = $1 `
-            const response = await PostgreSQL().query(sql, [id])
-            for(const row of response.rows){
-                const record = api.generateObject(row)
-                return record
+            let response: any
+            try {
+                response = await PostgreSQL().query(sql, [id])
+            } catch (err) {
+                console.error(
+                    {
+                        sql,
+                        customerid: id,
+                        errorMessage: err instanceof Error ? err.message : String(err),
+                        errorStack: err instanceof Error ? err.stack : undefined
+                    },
+                    "Customer.getSingle failed"
+                )
+                throw new Error(`Customer.getSingle failed for customerid: ${id}`, {
+                    cause: err instanceof Error ? err : undefined
+                })
             }
+            if (response.rows.length > 0) {
+                return api.generateObject(response.rows[0])
+            }
+            return undefined
         },
     }
     return api

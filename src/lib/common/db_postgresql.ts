@@ -1,35 +1,62 @@
 
-import type { PoolClient } from "pg";
+import type { Pool as PgPool, PoolClient } from "pg";
 import pkg from 'pg';
 const {Pool} = pkg;
 
 import { SECRET_PGUSER, SECRET_PGPASSWORD, SECRET_PGHOST, SECRET_PGPORT, SECRET_PGDATABASE } from '$env/static/private';
 
+type ErrorLogger = {
+    error: (message?: unknown, ...optionalParams: unknown[]) => void;
+};
+
+const processLogger: ErrorLogger =
+    (globalThis as { processLogger?: ErrorLogger }).processLogger ?? console;
+
+const sqlTemplateFingerprint = (sql: string): string => {
+    const withoutStrings = sql.replace(/'(?:''|[^'])*'/g, "?");
+    const withoutNumbers = withoutStrings.replace(/\b\d+(\.\d+)?\b/g, "?");
+    const normalized = withoutNumbers.replace(/\s+/g, " ").trim();
+    return normalized.length > 300 ? `${normalized.slice(0, 300)}…` : normalized;
+};
+
+const paramTypeSummary = (params: unknown[]): string[] =>
+    params.map((param) => {
+        if (param === null) return "null";
+        if (Array.isArray(param)) return "array";
+        return typeof param;
+    });
+
 const PostgreSQL = () => {
 
     const api = {
-        checkConnection: async (): Promise<PoolClient> => {
-            return await (await DBInstance.getInstance()).getContext()
+        checkConnection: async (): Promise<boolean> => {
+            const client = await (await DBInstance.getInstance()).getClient();
+            try {
+                await client.query("SELECT 1");
+                return true;
+            } finally {
+                client.release();
+            }
         },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         query: async (sql: string, params: any[] = []): Promise<any> => {
-            const dbContext = await (await DBInstance.getInstance()).getContext();
-            if(dbContext){
-
-                try{ 
-                    //console.log(sql, params);
-                    const res = await dbContext.query(sql, params);
-                    return res;
-                } catch (err) {
-                    if (err instanceof Error) {
-                        console.log(sql)
-                        console.log(params)
-                        console.log(err.stack)
-                    }
-                    throw new Error('There was a problem reading the database')
-                }
-            } else {
-                throw new Error('Database not available')
+            const pool = await (await DBInstance.getInstance()).getPool();
+            try{ 
+                //console.log(sql, params);
+                const res = await pool.query(sql, params);
+                return res;
+            } catch (err) {
+                processLogger.error(
+                    {
+                        sqlTemplate: sqlTemplateFingerprint(sql),
+                        paramCount: params.length,
+                        paramTypes: paramTypeSummary(params),
+                        errorMessage: err instanceof Error ? err.message : String(err),
+                        errorStack: err instanceof Error ? err.stack : undefined
+                    },
+                    "Database query failed"
+                );
+                throw new Error('There was a problem reading the database')
             }
 
         },
@@ -42,11 +69,11 @@ export default PostgreSQL;
 
 // Singleton pattern - used to connect to the database ONCE throughout the entire life of the app
 export class DBInstance {
-    private static dbContext: PoolClient;
+    private static pool: PgPool;
     private static instance: DBInstance;
     private async initialize() {
         try {
-            const pool = new Pool({
+            DBInstance.pool = new Pool({
                 database: SECRET_PGDATABASE,
                 host: SECRET_PGHOST,
                 user: SECRET_PGUSER,
@@ -56,7 +83,6 @@ export class DBInstance {
                 connectionTimeoutMillis: 5000,
                 max: 50
             })
-            DBInstance.dbContext = await pool.connect()
         } catch (err) {
             console.log(err)
             throw new Error('Unable to connect to database')
@@ -69,7 +95,10 @@ export class DBInstance {
         }
         return DBInstance.instance;
     };
-    public getContext = async (): Promise<PoolClient> => {
-        return DBInstance.dbContext;
+    public getPool = async (): Promise<PgPool> => {
+        return DBInstance.pool;
+    }
+    public getClient = async (): Promise<PoolClient> => {
+        return DBInstance.pool.connect();
     }
 }
