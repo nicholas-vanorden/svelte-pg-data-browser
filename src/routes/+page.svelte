@@ -13,6 +13,10 @@
                 <td>{customer.customerid}</td>
                 <td>{customer.display_name}</td>
             </tr>
-        {/each}
+        {:else}
+            <tr>
+                <td colspan="2">No customers found.</td>
+            </tr>
+         {/each}
     </tbody>
 </table>

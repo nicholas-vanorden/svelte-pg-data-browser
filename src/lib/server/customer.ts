@@ -22,7 +22,7 @@ export const Customer = () => {
         },
         getAll: async (): Promise<Array<ICustomer>> => {
             const results: ICustomer[] = []
-            const sql = `select customerid, display_name from public.customers order by display_name`
+            const sql = `select customerid, display_name from public.customers order by display_name limit 500`
             let response: any
             try {
                 response = await PostgreSQL().query(sql)
