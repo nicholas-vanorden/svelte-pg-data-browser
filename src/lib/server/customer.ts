@@ -44,6 +44,33 @@ export const Customer = () => {
             }
             return results
         },
+        search: async (term: string): Promise<Array<ICustomer>> => {
+            const results: ICustomer[] = []
+            if (!term) {
+                return results;
+            }
+            const sql = `select customerid, display_name from public.customers where display_name ilike $1 or customerid ilike $1 order by display_name limit 500`
+            let response: any
+            try {
+                response = await PostgreSQL().query(sql, [`%${term}%`])
+            } catch (err) {
+                console.error(
+                    {
+                        errorMessage: err instanceof Error ? err.message : String(err),
+                        errorStack: err instanceof Error ? err.stack : undefined
+                    },
+                    "Customer.search failed"
+                )
+                throw new Error("Customer.search failed", {
+                    cause: err instanceof Error ? err : undefined
+                })
+            }
+            for(const row of response.rows){
+                const record = api.generateObject(row)
+                results.push(record)
+            }
+            return results
+        },
         getSingle: async (id: string): Promise<ICustomer | undefined> => {
             if (!id) {
                 return undefined;
