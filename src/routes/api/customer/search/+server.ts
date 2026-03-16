@@ -7,7 +7,8 @@ export const GET: RequestHandler = async ({ url }) => {
         const query = url.searchParams.get('q') || '';
         const customers = await Customer().search(query)
         return json({ customers })
-    } catch {
-        return json({ customers: [] })
+    } catch (err) {
+        console.error('Customer search failed:', err);
+        return json({ error: 'Search failed' }, { status: 500 });
     }
-};
+}

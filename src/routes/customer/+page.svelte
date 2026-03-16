@@ -1,6 +1,7 @@
 <script lang="ts">
-    import type { ICustomer } from '$lib/server/customer';
+    import type { ICustomer } from '$lib/common/types';
     import type { PageData } from './$types';
+    import { onDestroy } from 'svelte';
     
     let {data}: {data: PageData} = $props();
     let customers: ICustomer[] = $state([]);
@@ -10,7 +11,11 @@
     });
 
     let searchTermValue = $state('');
-    let timer: NodeJS.Timeout;
+    let timer: ReturnType<typeof setTimeout>;
+
+    onDestroy(() => {
+        clearTimeout(timer);
+    });
 
     async function handleSearchTermInput(event: any) {
         clearTimeout(timer);
@@ -19,13 +24,31 @@
 
         timer = setTimeout(async () => {
             if (searchTermValue.length > 2) {
-                const response = await fetch(`/api/customer/search?q=${searchTermValue}`)
-                try {
-                    const json = await response.json()
-                    customers = json.customers
-                } catch(error:any) {
-                    alert(error.toString())
+                const response = await fetch(`/api/customer/search?q=${encodeURIComponent(searchTermValue)}`);
+                if (!response.ok) {
+                    customers = [];
+                    const message = `Search failed (${response.status})`;
+                    console.error(message);
+                    alert(message);
+                    return;
                 }
+
+                try {
+                    const json = await response.json();
+                    if (!json || !Array.isArray(json.customers)) {
+                        customers = [];
+                        const message = 'Search response missing customers.';
+                        console.error(message, json);
+                        alert(message);
+                        return;
+                    }
+                    customers = json.customers;
+                } catch(error:any) {
+                    customers = [];
+                    alert(error.toString());
+                }
+            } else {
+                customers = data.customers ?? [];
             }
         }, 500);
     }

@@ -1,14 +1,6 @@
 import PostgreSQL from "$lib/server/db_postgresql"
+import type { ICustomer } from "$lib/common/types"
 
-interface ICustomer {
-    customerid: string,
-    display_name: string,
-}
-interface ValidationError {
-    error: string
-}
-
-export type {ICustomer, ValidationError}
 
 export const Customer = () => {
 
@@ -46,13 +38,14 @@ export const Customer = () => {
         },
         search: async (term: string): Promise<Array<ICustomer>> => {
             const results: ICustomer[] = []
-            if (!term) {
+            const normalizedTerm = term.trim()
+            if (!normalizedTerm) {
                 return results;
             }
             const sql = `select customerid, display_name from public.customers where display_name ilike $1 or customerid ilike $1 order by display_name limit 500`
             let response: any
             try {
-                response = await PostgreSQL().query(sql, [`%${term}%`])
+                response = await PostgreSQL().query(sql, [`%${normalizedTerm}%`])
             } catch (err) {
                 console.error(
                     {

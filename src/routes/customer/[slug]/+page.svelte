@@ -1,6 +1,6 @@
 <script lang="ts">
     import { page } from "$app/state";
-    import type { ICustomer } from "$lib/server/customer";
+    import type { ICustomer } from "$lib/common/types";
     import { onMount } from "svelte";
 
     let customer: ICustomer = $state({
@@ -9,12 +9,20 @@
     })
 
     onMount(async () => {
-        const response = await fetch('/api/customer/'+page.params.slug)
+        const response = await fetch(`/api/customer/${encodeURIComponent(page.params.slug as string)}`)
+        if (!response.ok) {
+            alert(`Failed to load customer: ${response.status}`)
+            return
+        }
         try {
             const json = await response.json()
-            customer = json.customer
-        } catch(error:any) {
-            alert(error.toString())
+            if (json.customer) {
+                customer = json.customer
+            } else {
+                alert('Customer not found')
+            }
+        } catch(error:unknown) {
+            alert(error instanceof Error ? error.message : String(error))
         }
     })
 

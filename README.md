@@ -42,9 +42,9 @@ A simple web app to browse PostgreSQL data tables built with SvelteKit and TypeS
 
 - Home: `/`
 - Customers: `/customer`
-- Customer detail: `/customer/[id]`
+- Customer detail: `/customer/[slug]`
 - Accounts: `/account`
-- Account detail: `/account/[id]`
+- Account detail: `/account/[slug]`
 
 ## Scripts
 

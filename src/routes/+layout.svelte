@@ -18,11 +18,18 @@
 				default: return val
 			}
 		}
+		const safeDecode = (value: string): string => {
+			try {
+				return decodeURIComponent(value);
+			} catch {
+				return value;
+			}
+		};
 
 		for (const segment of segments) {
 			href += `/${segment}`;
 			items.push({
-				label: breadCrumbDisplay(decodeURIComponent(segment).replace(/-/g, ' ')),
+				label: breadCrumbDisplay(safeDecode(segment).replace(/-/g, ' ')),
 				href
 			});
 		}

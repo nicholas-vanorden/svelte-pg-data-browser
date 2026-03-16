@@ -35,7 +35,7 @@ This repo is a SvelteKit + TypeScript app that browses PostgreSQL tables (custom
 ## Database Notes
 
 - No migrations or seed scripts exist; schema/data must be created externally.
-- The app expects existing `customer` and `account` tables (see server routes for fields used).
+- The app expects existing `customers` and `accounts` tables (see server routes for fields used).
 
 ## Common Scripts
 
