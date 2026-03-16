@@ -1,0 +1,1 @@
+<p>page for single account</p>
