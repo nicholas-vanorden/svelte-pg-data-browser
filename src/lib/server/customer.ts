@@ -42,10 +42,12 @@ export const Customer = () => {
             if (!normalizedTerm) {
                 return results;
             }
-            const sql = `select customerid, display_name from public.customers where display_name ilike $1 or customerid ilike $1 order by display_name limit 500`
+            // Escape LIKE special characters
+            const escapedTerm = normalizedTerm.replace(/[%_\\]/g, '\\$&')
+            const sql = `select customerid, display_name from public.customers where display_name ilike $1 escape '\\' or customerid ilike $1 escape '\\' order by display_name limit 500`
             let response: any
             try {
-                response = await PostgreSQL().query(sql, [`%${normalizedTerm}%`])
+                response = await PostgreSQL().query(sql, [`%${escapedTerm}%`])
             } catch (err) {
                 console.error(
                     {
