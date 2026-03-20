@@ -26,11 +26,16 @@ This repo is a SvelteKit + TypeScript app that browses PostgreSQL tables (custom
 - `src/routes/api/customer/[slug]/+server.ts` Customer details API
 - `src/routes/api/account/[slug]/+server.ts` Account details API
 - `src/routes/+layout.svelte` Global layout (breadcrumbs)
+- `src/app.css` Global Tailwind styles (table styling, base typography)
+- `tailwind.config.cjs` Tailwind theme + content paths
+- `postcss.config.cjs` PostCSS pipeline for Tailwind
 
 ## UI Notes
 
 - Breadcrumbs are rendered in `src/routes/+layout.svelte` and use `$app/state`.
 - Customer search updates a local `$state` array rather than mutating `data` from `$props()`.
+- The home page search redirects to `/customer?search=...` and the customer page pre-populates the input + runs `/api/customer/search`.
+- Table styling (zebra rows + hover) is defined globally in `src/app.css`.
 
 ## Database Notes
 

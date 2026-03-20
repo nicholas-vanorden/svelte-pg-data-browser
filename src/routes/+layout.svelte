@@ -1,4 +1,5 @@
 <script lang="ts">
+	import '../app.css';
 	import favicon from '$lib/assets/favicon.png';
 	import { page } from '$app/state';
 
@@ -42,38 +43,23 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<nav class="breadcrumbs" aria-label="Breadcrumb">
-	{#each crumbs as crumb, i}
-		{#if i < crumbs.length - 1}
-			<a href={crumb.href}>{crumb.label}</a>
-			<span class="sep" aria-hidden="true">/</span>
-		{:else}
-			<span aria-current="page">{crumb.label}</span>
+<div class="min-h-screen bg-slate-50">
+	<div class="mx-auto w-full max-w-6xl px-6 py-6">
+		{#if page.url.pathname !== '/'}
+			<nav class="mb-6 flex flex-wrap items-center gap-2 text-sm text-slate-600" aria-label="Breadcrumb">
+				{#each crumbs as crumb, i}
+					{#if i < crumbs.length - 1}
+						<a class="font-medium text-slate-700 hover:text-slate-900" href={crumb.href}>
+							{crumb.label}
+						</a>
+						<span class="text-slate-400" aria-hidden="true">/</span>
+					{:else}
+						<span aria-current="page" class="font-semibold text-slate-900">{crumb.label}</span>
+					{/if}
+				{/each}
+			</nav>
 		{/if}
-	{/each}
-</nav>
 
-{@render children()}
-
-<style>
-	.breadcrumbs {
-		display: flex;
-		gap: 0.5rem;
-		align-items: center;
-		font-size: 0.95rem;
-		margin-bottom: 1rem;
-	}
-
-	.breadcrumbs a {
-		color: inherit;
-		text-decoration: none;
-	}
-
-	.breadcrumbs a:hover {
-		text-decoration: underline;
-	}
-
-	.sep {
-		opacity: 0.5;
-	}
-</style>
+		{@render children()}
+	</div>
+</div>
