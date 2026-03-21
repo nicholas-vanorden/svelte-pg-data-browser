@@ -3,7 +3,8 @@
 
 	let searchTerm = $state('');
 
-	const handleSubmit = () => {
+	const handleSubmit = (e: SubmitEvent) => {
+        e.preventDefault();
 		const query = searchTerm.trim();
 		if (query.length === 0) {
 			goto('/customer');
@@ -48,6 +49,7 @@
 				type="text"
 				bind:value={searchTerm}
 				placeholder="Search by name, email, or account..."
+                aria-label="SearchTerm"
 				class="w-full border-0 bg-transparent text-lg text-slate-900 placeholder:text-slate-400 focus:outline-none"
 			/>
 			<button

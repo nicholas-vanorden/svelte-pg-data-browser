@@ -51,7 +51,7 @@
         lastSearchParam = param;
 
         const trimmed = param?.trim() ?? '';
-        if (trimmed.length > 0) {
+        if (trimmed.length > 2) {
             searchTermValue = trimmed;
             runSearch(trimmed);
         } else {
@@ -60,7 +60,7 @@
         }
     });
 
-    async function handleSearchTermInput() {
+    function handleSearchTermInput() {
         clearTimeout(timer);
 
         timer = setTimeout(async () => {
