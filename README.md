@@ -8,6 +8,7 @@ A simple web app to browse PostgreSQL data tables built with SvelteKit and TypeS
 - Detail pages per record
 - Server-side API routes for data access
 - Quick search on customers
+- Tailwind-powered styling with global table theming
 
 ## Setup
 
@@ -42,6 +43,7 @@ A simple web app to browse PostgreSQL data tables built with SvelteKit and TypeS
 
 - Home: `/`
 - Customers: `/customer`
+- Customers (with search): `/customer?search=Acme`
 - Customer detail: `/customer/[slug]`
 - Accounts: `/account`
 - Account detail: `/account/[slug]`
@@ -56,3 +58,8 @@ Database prerequisites:
 
 - You must have a reachable PostgreSQL instance and an existing database with the tables you want to browse.
 - There are no migrations or seed scripts in this repo; create schema/data externally before startup.
+
+Styling notes:
+
+- Tailwind CSS is configured via `tailwind.config.cjs` and `postcss.config.cjs`.
+- Global styles live in `src/app.css` and are imported in `src/routes/+layout.svelte`.
