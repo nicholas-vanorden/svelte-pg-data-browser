@@ -116,7 +116,7 @@
             </tr>
         {:else}
             <tr>
-                <td colspan="3" class="py-10 text-center text-sm text-slate-500">No customers found.</td>
+                <td colspan="6" class="py-10 text-center text-sm text-slate-500">No customers found.</td>
             </tr>
          {/each}
     </tbody>
