@@ -6,8 +6,20 @@ interface ICustomer {
     zip: string,
     accountsCount?: number
 }
+interface ICustomerDetails {
+    customer: ICustomer,
+    delivery_address: string,
+    accountServices: IAccount[]
+}
+interface IAccount {
+    customerid: string,
+    accountid: string,
+    service_number: string,
+    service_type: string,
+    internal_service_type: string
+}
 interface ValidationError {
     error: string
 }
 
-export type {ICustomer, ValidationError}
+export type {ICustomer, ICustomerDetails, IAccount, ValidationError}

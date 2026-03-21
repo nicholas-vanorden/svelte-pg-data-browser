@@ -2,6 +2,8 @@
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.png';
 	import { page } from '$app/state';
+	import ErrorDialog from '$lib/components/ErrorDialog.svelte';
+	import { clearError, errorDialog } from '$lib/stores/error';
 
 	let { children } = $props();
 
@@ -63,3 +65,11 @@
 		{@render children()}
 	</div>
 </div>
+
+<ErrorDialog
+	open={$errorDialog.open}
+	message={$errorDialog.message}
+	onClose={() => {
+		clearError();
+	}}
+/>
