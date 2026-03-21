@@ -1,20 +1,38 @@
 import PostgreSQL from "$lib/server/db_postgresql"
 import type { ICustomer } from "$lib/common/types"
 
-
 export const Customer = () => {
 
     const api = {
         generateObject: (row: any): ICustomer => {
             const object: ICustomer = {
                 customerid: row.customerid,
-                display_name: row.display_name
+                display_name: row.display_name,
+                city: row.city,
+                state: row.state,
+                zip: row.zip,
+                accountsCount: row.accounts,
             }
             return object
         },
         getAll: async (): Promise<Array<ICustomer>> => {
             const results: ICustomer[] = []
-            const sql = `select customerid, display_name from public.customers order by display_name limit 500`
+            const sql = `
+select
+      customerid
+    , display_name
+    , city
+    , state
+    , zip
+    , count(*) as accounts
+from public.customers group by (
+      customerid
+    , display_name
+    , city
+    , state
+    , zip
+)
+order by display_name limit 500`
             let response: any
             try {
                 response = await PostgreSQL().query(sql)
@@ -44,7 +62,24 @@ export const Customer = () => {
             }
             // Escape LIKE special characters
             const escapedTerm = normalizedTerm.replace(/[%_\\]/g, '\\$&')
-            const sql = `select customerid, display_name from public.customers where display_name ilike $1 escape '\\' or customerid ilike $1 escape '\\' order by display_name limit 500`
+            const sql = `
+select
+      customerid
+    , display_name
+    , city
+    , state
+    , zip
+    , count(*) as accounts
+from public.customers 
+where display_name ilike $1 escape '\\' or customerid ilike $1 escape '\\'
+group by (
+      customerid
+    , display_name
+    , city
+    , state
+    , zip
+)
+order by display_name limit 500`
             let response: any
             try {
                 response = await PostgreSQL().query(sql, [`%${escapedTerm}%`])
