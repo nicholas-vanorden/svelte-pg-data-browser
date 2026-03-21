@@ -4,7 +4,7 @@ interface ICustomer {
     city: string,
     state: string,
     zip: string,
-    accountsCount: number
+    accountsCount?: number
 }
 interface ValidationError {
     error: string
