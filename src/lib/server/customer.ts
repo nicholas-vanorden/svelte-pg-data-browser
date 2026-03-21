@@ -105,7 +105,15 @@ order by display_name limit 500`
             if (!id) {
                 return undefined;
             }
-            const sql = `select customerid, display_name from public.customers where customerid = $1 `
+            const sql = `
+select 
+    customerid
+    , display_name
+    , city
+    , state
+    , zip
+from public.customers
+where customerid = $1 `
             let response: any
             try {
                 response = await PostgreSQL().query(sql, [id])
