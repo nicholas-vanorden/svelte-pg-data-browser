@@ -94,17 +94,29 @@
     </div>
 
     <table>
-    <thead><tr><th>Id</th><th>Name</th><th>Details</th></tr></thead>
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>City</th>
+            <th>State</th>
+            <th>Zip</th>
+            <th>Accounts</th>
+        </tr>
+    </thead>
     <tbody>
         {#each customers as customer}
             <tr>
                 <td>{customer.customerid}</td>
                 <td>{customer.display_name}</td>
-                <td><a class="font-medium text-brand-700 hover:text-brand-800" href="/customer/{customer.customerid}">details</a></td>
+                <td>{customer.city}</td>
+                <td>{customer.state}</td>
+                <td>{customer.zip}</td>
+                <td><a class="font-medium text-brand-700 hover:text-brand-800" href="/customer/{customer.customerid}">{customer.accountsCount}</a></td>
             </tr>
         {:else}
             <tr>
-                <td colspan="3" class="py-10 text-center text-sm text-slate-500">No customers found.</td>
+                <td colspan="6" class="py-10 text-center text-sm text-slate-500">No customers found.</td>
             </tr>
          {/each}
     </tbody>
