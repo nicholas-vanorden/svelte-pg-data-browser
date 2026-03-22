@@ -102,7 +102,7 @@
             <th>City</th>
             <th>State</th>
             <th>Zip</th>
-            <th>Accounts</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -113,7 +113,7 @@
                 <td>{customer.city}</td>
                 <td>{customer.state}</td>
                 <td>{customer.zip}</td>
-                <td><a class="font-medium text-brand-700 hover:text-brand-800" href="/customer/{customer.customerid}">{customer.accountsCount}</a></td>
+                <td><a class="font-medium text-brand-700 hover:text-brand-800" href="/customer/{customer.customerid}">Details</a></td>
             </tr>
         {:else}
             <tr>
