@@ -1,10 +1,16 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
 
 	let searchTerm = $state('');
+	let searchInput: HTMLInputElement | null = $state(null);
+
+	onMount(() => {
+		searchInput?.focus();
+	});
 
 	const handleSubmit = (e: SubmitEvent) => {
-        e.preventDefault();
+		e.preventDefault();
 		const query = searchTerm.trim();
 		if (query.length === 0) {
 			goto('/customer');
@@ -48,6 +54,7 @@
 			<input
 				type="text"
 				bind:value={searchTerm}
+				bind:this={searchInput}
 				placeholder="Search by name, email, or account..."
                 aria-label="SearchTerm"
 				class="w-full border-0 bg-transparent text-lg text-slate-900 placeholder:text-slate-400 focus:outline-none"

@@ -1,17 +1,15 @@
+import type { RequestHandler } from './$types';
 import { Customer } from '$lib/server/customer.js'
-import { json } from '@sveltejs/kit'
+import { json, error } from '@sveltejs/kit'
 
-export async function GET({params}) {
+export const GET: RequestHandler = async ({ params }) => {
     const customer_id = params.slug
 
-    let customer = await Customer().getSingle(customer_id)
+    let customerDetails = await Customer().getSingle(customer_id)
 
-    if(!customer){
-        customer = {
-            customerid: '',
-            display_name: ''
-        }
-    }
+    if (!customerDetails) {
+        throw error(404, 'Customer not found')
+     }
 
-    return json({customer})
+    return json({customerDetails})
 }

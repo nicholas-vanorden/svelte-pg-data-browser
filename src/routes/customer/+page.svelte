@@ -3,6 +3,7 @@
     import type { PageData } from './$types';
     import { onDestroy } from 'svelte';
     import { page } from '$app/state';
+    import { showError } from '$lib/stores/error';
     
     let {data}: {data: PageData} = $props();
     let customers: ICustomer[] = $state([]);
@@ -25,7 +26,7 @@
             customers = [];
             const message = `Search failed (${response.status})`;
             console.error(message);
-            alert(message);
+            showError(message);
             return;
         }
 
@@ -35,13 +36,13 @@
                 customers = [];
                 const message = 'Search response missing customers.';
                 console.error(message, json);
-                alert(message);
+                showError(message);
                 return;
             }
             customers = json.customers;
-        } catch(error:any) {
+        } catch(error: unknown) {
             customers = [];
-            alert(error.toString());
+            showError(error instanceof Error ? error.message : String(error));
         }
     }
 

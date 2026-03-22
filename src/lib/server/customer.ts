@@ -1,5 +1,6 @@
 import PostgreSQL from "$lib/server/db_postgresql"
-import type { ICustomer } from "$lib/common/types"
+import type { ICustomer, ICustomerDetails } from "$lib/common/types"
+import { Account } from "$lib/server/account"
 
 export const Customer = () => {
 
@@ -12,6 +13,18 @@ export const Customer = () => {
                 state: row.state,
                 zip: row.zip,
                 accountsCount: row.accounts,
+            }
+            return object
+        },
+        generateDetailsObject: (rows: any[]): ICustomerDetails => {
+            if (rows.length === 0) {
+                throw new Error("Cannot generate details from empty rows")
+            }
+            const accountApi = Account()
+            const object: ICustomerDetails = {
+                customer: api.generateObject(rows[0]),
+                delivery_address: rows[0].delivery_address,
+                accountServices: rows.map(r => accountApi.generateObject(r))
             }
             return object
         },
@@ -101,7 +114,7 @@ order by display_name limit 500`
             }
             return results
         },
-        getSingle: async (id: string): Promise<ICustomer | undefined> => {
+        getSingle: async (id: string): Promise<ICustomerDetails | undefined> => {
             if (!id) {
                 return undefined;
             }
@@ -112,6 +125,11 @@ select
     , city
     , state
     , zip
+    , delivery_address
+    , account
+    , service_number
+    , service_type
+    , internal_service_type
 from public.customers
 where customerid = $1 `
             let response: any
@@ -130,7 +148,7 @@ where customerid = $1 `
                 })
             }
             if (response.rows.length > 0) {
-                return api.generateObject(response.rows[0])
+                return api.generateDetailsObject(response.rows)
             }
             return undefined
         },
