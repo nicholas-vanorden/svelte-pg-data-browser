@@ -49,7 +49,7 @@
 
         timer = setTimeout(async () => {
             if (searchTermValue.length > 2) {
-                runSearch(searchTermValue);
+                await runSearch(searchTermValue);
             } else {
                 accounts = data.accounts ?? [];
             }
@@ -65,7 +65,7 @@
             <p class="text-sm text-slate-500">Browse the full accounts table or search for a specific record.</p>
         </div>
         <div class="w-full sm:max-w-sm">
-            <label class="sr-only" for="customer-search">Search accounts</label>
+            <label class="sr-only" for="account-search">Search accounts</label>
             <input
                 id="account-search"
                 type="text"

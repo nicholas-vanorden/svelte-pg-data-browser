@@ -34,7 +34,7 @@ select
 from public.customers
 where account is not null and account <> ''
 order by account limit 500`
-            let response: any
+            let response: { rows: AccountRow[] }
             try {
                 response = await PostgreSQL().query(sql)
             } catch (err) {
@@ -74,7 +74,7 @@ from public.customers
 where account is not null and account <> ''
 and (account ilike $1 escape '\\' or service_number ilike $1 escape '\\')
 order by account limit 500`
-            let response: any
+            let response: { rows: AccountRow[] }
             try {
                 response = await PostgreSQL().query(sql, [`%${escapedTerm}%`])
             } catch (err) {
