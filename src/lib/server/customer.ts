@@ -11,8 +11,7 @@ export const Customer = () => {
                 display_name: row.display_name,
                 city: row.city,
                 state: row.state,
-                zip: row.zip,
-                accountsCount: row.accounts,
+                zip: row.zip
             }
             return object
         },
@@ -24,7 +23,7 @@ export const Customer = () => {
             const object: ICustomerDetails = {
                 customer: api.generateObject(rows[0]),
                 delivery_address: rows[0].delivery_address,
-                accountServices: rows.map(r => accountApi.generateObject(r))
+                accountServices: rows.filter(r => r.account).map(r => accountApi.generateObject(r))
             }
             return object
         },
@@ -37,8 +36,8 @@ select
     , city
     , state
     , zip
-    , count(*) as accounts
-from public.customers group by (
+from public.customers
+group by (
       customerid
     , display_name
     , city
@@ -82,7 +81,6 @@ select
     , city
     , state
     , zip
-    , count(*) as accounts
 from public.customers 
 where display_name ilike $1 escape '\\' or customerid ilike $1 escape '\\'
 group by (

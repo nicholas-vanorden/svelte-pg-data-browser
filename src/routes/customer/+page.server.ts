@@ -5,7 +5,8 @@ export const load: PageServerLoad = async () => {
     try {
         const customers = await Customer().getAll()
         return { customers }
-    } catch {
+    } catch (err) {
+        console.error('Failed to load customers:', err);
         return { customers: [] }
     }
 }

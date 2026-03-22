@@ -102,7 +102,7 @@
             <th>City</th>
             <th>State</th>
             <th>Zip</th>
-            <th>Accounts</th>
+            <th scope="col">Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -113,7 +113,15 @@
                 <td>{customer.city}</td>
                 <td>{customer.state}</td>
                 <td>{customer.zip}</td>
-                <td><a class="font-medium text-brand-700 hover:text-brand-800" href="/customer/{customer.customerid}">{customer.accountsCount}</a></td>
+                <td>
+                    <a
+                        class="font-medium text-brand-700 hover:text-brand-800"
+                        href="/customer/{customer.customerid}"
+                        aria-label={`View details for ${customer.display_name}`}
+                    >
+                        Details
+                    </a>
+                </td>
             </tr>
         {:else}
             <tr>

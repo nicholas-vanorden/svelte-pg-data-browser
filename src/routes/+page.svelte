@@ -55,7 +55,7 @@
 				type="text"
 				bind:value={searchTerm}
 				bind:this={searchInput}
-				placeholder="Search by name, email, or account..."
+				placeholder="Search by name or id..."
                 aria-label="SearchTerm"
 				class="w-full border-0 bg-transparent text-lg text-slate-900 placeholder:text-slate-400 focus:outline-none"
 			/>

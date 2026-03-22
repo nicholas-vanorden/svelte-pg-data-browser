@@ -3,8 +3,7 @@ interface ICustomer {
     display_name: string,
     city: string,
     state: string,
-    zip: string,
-    accountsCount?: number
+    zip: string
 }
 interface ICustomerDetails {
     customer: ICustomer,
