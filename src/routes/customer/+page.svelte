@@ -40,9 +40,9 @@
                 return;
             }
             customers = json.customers;
-        } catch(error:any) {
+        } catch(error: unknown) {
             customers = [];
-            showError(error.toString());
+            showError(error instanceof Error ? error.message : String(error));
         }
     }
 

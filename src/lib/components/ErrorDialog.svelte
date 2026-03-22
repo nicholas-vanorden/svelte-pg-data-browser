@@ -12,10 +12,14 @@
 		role="alertdialog"
 		aria-live="assertive"
 		aria-modal="true"
+		aria-labelledby="error-dialog-title"
+		aria-describedby="error-dialog-message"
+		onkeydown={(e) => e.key === 'Escape' && onClose()}
+		tabindex="0"
 	>
 		<div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-			<h3 class="text-lg font-semibold text-slate-900">Something went wrong</h3>
-			<p class="mt-2 text-sm text-slate-600">{message}</p>
+			<h3 id="error-dialog-title" class="text-lg font-semibold text-slate-900">Something went wrong</h3>
+			<p id="error-dialog-message" class="mt-2 text-sm text-slate-600">{message}</p>
 			<div class="mt-6 flex justify-end">
 				<button
 					type="button"

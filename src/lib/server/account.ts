@@ -2,8 +2,16 @@ import type { IAccount } from "$lib/common/types"
 
 export const Account = () => {
 
+    type AccountRow = {
+        customerid: string;
+        account: string;
+        service_number: string;
+        service_type: string;
+        internal_service_type: string;
+    }
+
     const api = {
-        generateObject: (row: any): IAccount => {
+        generateObject: (row: AccountRow): IAccount => {
             const object: IAccount = {
                 customerid: row.customerid,
                 accountid: row.account,

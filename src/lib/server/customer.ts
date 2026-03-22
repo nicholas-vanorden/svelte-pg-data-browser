@@ -17,10 +17,14 @@ export const Customer = () => {
             return object
         },
         generateDetailsObject: (rows: any[]): ICustomerDetails => {
+            if (rows.length === 0) {
+                throw new Error("Cannot generate details from empty rows")
+            }
+            const accountApi = Account()
             const object: ICustomerDetails = {
                 customer: api.generateObject(rows[0]),
                 delivery_address: rows[0].delivery_address,
-                accountServices: rows.map(r => Account().generateObject(r))
+                accountServices: rows.map(r => accountApi.generateObject(r))
             }
             return object
         },
