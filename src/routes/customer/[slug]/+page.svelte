@@ -6,7 +6,7 @@
 
     let customerDetails: ICustomerDetails | null = $state(null)
     let loading = $state(true)
-    let groupedServices = $derived(() => {
+    let groupedServices = $derived.by(() => {
         return groupAccountServices(customerDetails?.accountServices ?? [])
     })
 
