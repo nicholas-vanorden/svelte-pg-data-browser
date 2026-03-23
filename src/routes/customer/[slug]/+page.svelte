@@ -6,11 +6,9 @@
 
     let customerDetails: ICustomerDetails | null = $state(null)
     let loading = $state(true)
-    let groupedServices = $state([] as Array<{
-        key: string;
-        accountid: string;
-        services: ICustomerDetails['accountServices'];
-    }>)
+    let groupedServices = $derived(() => {
+        return groupAccountServices(customerDetails?.accountServices ?? [])
+    })
 
     onMount(async () => {
         const response = await fetch(`/api/customer/${encodeURIComponent(page.params.slug as string)}`)
@@ -31,10 +29,6 @@
             showError(error instanceof Error ? error.message : String(error))
             loading = false
         }
-    })
-
-    $effect(() => {
-        groupedServices = groupAccountServices(customerDetails?.accountServices ?? [])
     })
 
     function groupAccountServices(list: ICustomerDetails['accountServices']) {

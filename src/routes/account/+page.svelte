@@ -6,20 +6,10 @@
     
     let {data}: {data: PageData} = $props();
     let accounts: IAccount[] = $state([]);
-    let groupedAccounts = $state([] as Array<{
-        key: string;
-        accountid: string;
-        customerid: string;
-        display_name: string;
-        services: IAccount[];
-    }>);
+    let groupedAccounts = $derived(groupAccounts(accounts));
 
     $effect(() => {
         accounts = data.accounts ?? [];
-    });
-
-    $effect(() => {
-        groupedAccounts = groupAccounts(accounts);
     });
 
     let searchTermValue = $state('');
