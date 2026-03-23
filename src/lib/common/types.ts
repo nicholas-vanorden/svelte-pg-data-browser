@@ -12,6 +12,7 @@ interface ICustomerDetails {
 }
 interface IAccount {
     customerid: string,
+    display_name: string,
     accountid: string,
     service_number: string,
     service_type: string,

@@ -97,11 +97,11 @@
     <table>
     <thead>
         <tr>
-            <th>Id</th>
-            <th>Name</th>
-            <th>City</th>
-            <th>State</th>
-            <th>Zip</th>
+            <th scope="col">Id</th>
+            <th scope="col">Name</th>
+            <th scope="col">City</th>
+            <th scope="col">State</th>
+            <th scope="col">Zip</th>
             <th scope="col">Actions</th>
         </tr>
     </thead>
