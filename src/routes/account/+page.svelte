@@ -6,9 +6,20 @@
     
     let {data}: {data: PageData} = $props();
     let accounts: IAccount[] = $state([]);
+    let groupedAccounts = $state([] as Array<{
+        key: string;
+        accountid: string;
+        customerid: string;
+        display_name: string;
+        services: IAccount[];
+    }>);
 
     $effect(() => {
         accounts = data.accounts ?? [];
+    });
+
+    $effect(() => {
+        groupedAccounts = groupAccounts(accounts);
     });
 
     let searchTermValue = $state('');
@@ -56,6 +67,34 @@
         }, 500);
     }
 
+    function groupAccounts(list: IAccount[]) {
+        const groups = new Map<string, {
+            key: string;
+            accountid: string;
+            customerid: string;
+            display_name: string;
+            services: IAccount[];
+        }>();
+
+        for (const account of list) {
+            const key = `${account.accountid}::${account.customerid}::${account.display_name}`;
+            const existing = groups.get(key);
+            if (existing) {
+                existing.services.push(account);
+                continue;
+            }
+            groups.set(key, {
+                key,
+                accountid: account.accountid,
+                customerid: account.customerid,
+                display_name: account.display_name,
+                services: [account]
+            });
+        }
+
+        return Array.from(groups.values());
+    }
+
 </script>
 
 <section class="space-y-6">
@@ -80,27 +119,39 @@
     <table>
     <thead>
         <tr>
-            <th>Account Id</th>
-            <th>Service Number</th>
-            <th>Service Type</th>
-            <th>Internal Service Type</th>
-            <th>Customer</th>
+            <th scope="col">Account Id</th>
+            <th scope="col">Customer</th>
+            <th scope="col">Service Number</th>
+            <th scope="col">Service Type</th>
+            <th scope="col">Internal Service Type</th>
         </tr>
     </thead>
     <tbody>
-        {#each accounts as account}
-            <tr>
-                <td>{account.accountid}</td>
-                <td>{account.service_number}</td>
-                <td>{account.service_type}</td>
-                <td>{account.internal_service_type}</td>
-                <td><a class="font-medium text-brand-700 hover:text-brand-800" href="/customer/{account.customerid}">{account.customerid}</a></td>
-            </tr>
+        {#if groupedAccounts.length > 0}
+            {#each groupedAccounts as group (group.key)}
+                <tr class="!bg-white hover:!bg-white">
+                    <td>{group.accountid}</td>
+                    <td colspan="4">
+                        <a class="font-medium text-brand-700 hover:text-brand-800" href="/customer/{group.customerid}">
+                            {group.display_name}
+                        </a>
+                    </td>
+                </tr>
+                {#each group.services as service, index (`${group.key}::${service.service_number}::${service.internal_service_type}::${index}`)}
+                    <tr class="!bg-slate-50 even:!bg-slate-100">
+                        <td class="py-1"></td>
+                        <td class="py-1"></td>
+                        <td class="py-1">{service.service_number}</td>
+                        <td class="py-1">{service.service_type}</td>
+                        <td class="py-1">{service.internal_service_type}</td>
+                    </tr>
+                {/each}
+            {/each}
         {:else}
             <tr>
                 <td colspan="5" class="py-10 text-center text-sm text-slate-500">No accounts found.</td>
             </tr>
-         {/each}
+        {/if}
     </tbody>
     </table>
 </section>

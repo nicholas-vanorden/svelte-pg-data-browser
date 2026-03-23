@@ -6,6 +6,11 @@
 
     let customerDetails: ICustomerDetails | null = $state(null)
     let loading = $state(true)
+    let groupedServices = $state([] as Array<{
+        key: string;
+        accountid: string;
+        services: ICustomerDetails['accountServices'];
+    }>)
 
     onMount(async () => {
         const response = await fetch(`/api/customer/${encodeURIComponent(page.params.slug as string)}`)
@@ -27,6 +32,30 @@
             loading = false
         }
     })
+
+    $effect(() => {
+        groupedServices = groupAccountServices(customerDetails?.accountServices ?? [])
+    })
+
+    function groupAccountServices(list: ICustomerDetails['accountServices']) {
+        const groups = new Map<string, {
+            key: string;
+            accountid: string;
+            services: ICustomerDetails['accountServices'];
+        }>()
+
+        for (const service of list) {
+            const key = service.accountid
+            const existing = groups.get(key)
+            if (existing) {
+                existing.services.push(service)
+                continue
+            }
+            groups.set(key, { key, accountid: service.accountid, services: [service] })
+        }
+
+        return Array.from(groups.values())
+    }
 
 </script>
 {#if loading}
@@ -66,20 +95,28 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {#each customerDetails.accountServices as service}
-                        <tr>
-                            <td>{service.accountid}</td>
-                            <td>{service.service_number}</td>
-                            <td>{service.service_type}</td>
-                            <td>{service.internal_service_type}</td>
-                        </tr>
+                    {#if groupedServices.length > 0}
+                        {#each groupedServices as group (group.key)}
+                            <tr class="!bg-white hover:!bg-white">
+                                <td>{group.accountid}</td>
+                                <td colspan="3"></td>
+                            </tr>
+                            {#each group.services as service, index (`${group.key}::${service.service_number}::${service.internal_service_type}::${index}`)}
+                                <tr class="!bg-slate-50 even:!bg-slate-100">
+                                    <td class="py-1"></td>
+                                    <td class="py-1">{service.service_number}</td>
+                                    <td class="py-1">{service.service_type}</td>
+                                    <td class="py-1">{service.internal_service_type}</td>
+                                </tr>
+                            {/each}
+                        {/each}
                     {:else}
                         <tr>
                             <td colspan="4" class="py-10 text-center text-sm text-slate-500">
                                 No account services found.
                             </td>
                         </tr>
-                    {/each}
+                    {/if}
                 </tbody>
             </table>
         </div>

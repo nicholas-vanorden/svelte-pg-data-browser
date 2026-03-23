@@ -4,17 +4,19 @@ import type { IAccount } from "$lib/common/types"
 export const Account = () => {
 
     type AccountRow = {
-        customerid: string;
-        account: string;
-        service_number: string;
-        service_type: string;
-        internal_service_type: string;
+        customerid: string
+        display_name: string
+        account: string
+        service_number: string
+        service_type: string
+        internal_service_type: string
     }
 
     const api = {
         generateObject: (row: AccountRow): IAccount => {
             const object: IAccount = {
                 customerid: row.customerid,
+                display_name: row.display_name,
                 accountid: row.account,
                 service_number: row.service_number,
                 service_type: row.service_type,
@@ -27,6 +29,7 @@ export const Account = () => {
             const sql = `
 select
       customerid
+    , display_name
     , account
     , service_number
     , service_type
@@ -66,13 +69,14 @@ order by account limit 500`
             const sql = `
 select
       customerid
+    , display_name
     , account
     , service_number
     , service_type
     , internal_service_type
 from public.customers 
 where account is not null and account <> ''
-and (account ilike $1 escape '\\' or service_number ilike $1 escape '\\')
+and (account ilike $1 escape '\\' or display_name ilike $1 escape '\\')
 order by account limit 500`
             let response: { rows: AccountRow[] }
             try {
