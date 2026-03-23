@@ -92,8 +92,9 @@
                     {#if groupedServices.length > 0}
                         {#each groupedServices as group (group.key)}
                             <tr class="!bg-white hover:!bg-white">
-                                <td>{group.accountid}</td>
-                                <td colspan="3"></td>
+                                <th colspan="4" class="text-left font-semibold">
+                                    {group.accountid}
+                                </th>
                             </tr>
                             {#each group.services as service, index (`${group.key}::${service.service_number}::${service.internal_service_type}::${index}`)}
                                 <tr class="!bg-slate-50 even:!bg-slate-100">
