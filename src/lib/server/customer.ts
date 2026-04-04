@@ -23,7 +23,9 @@ export const Customer = () => {
             const object: ICustomerDetails = {
                 customer: api.generateObject(rows[0]),
                 delivery_address: rows[0].delivery_address,
-                accountServices: rows.filter(r => r.account).map(r => accountApi.generateObject(r))
+                accountServices: rows
+                    .filter(r => r.accountid && r.accountid !== '')
+                    .map(r => accountApi.generateObject(r))
             }
             return object
         },
@@ -124,7 +126,7 @@ select
     , state
     , zip
     , delivery_address
-    , account
+    , accountid
     , service_number
     , service_type
     , internal_service_type
