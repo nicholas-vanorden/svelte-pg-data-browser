@@ -6,7 +6,7 @@ export const Account = () => {
     type AccountRow = {
         customerid: string
         display_name: string
-        account: string
+        accountid: string
         service_number: string
         service_type: string
         internal_service_type: string
@@ -17,7 +17,7 @@ export const Account = () => {
             const object: IAccount = {
                 customerid: row.customerid,
                 display_name: row.display_name,
-                accountid: row.account,
+                accountid: row.accountid,
                 service_number: row.service_number,
                 service_type: row.service_type,
                 internal_service_type: row.internal_service_type,
@@ -30,13 +30,13 @@ export const Account = () => {
 select
       customerid
     , display_name
-    , account
+    , accountid
     , service_number
     , service_type
     , internal_service_type
 from public.customers
-where account is not null and account <> ''
-order by account limit 500`
+where accountid is not null and accountid <> ''
+order by accountid limit 500`
             let response: { rows: AccountRow[] }
             try {
                 response = await PostgreSQL().query(sql)
@@ -70,14 +70,14 @@ order by account limit 500`
 select
       customerid
     , display_name
-    , account
+    , accountid
     , service_number
     , service_type
     , internal_service_type
 from public.customers 
-where account is not null and account <> ''
-and (account ilike $1 escape '\\' or display_name ilike $1 escape '\\')
-order by account limit 500`
+where accountid is not null and accountid <> ''
+and (accountid ilike $1 escape '\\' or display_name ilike $1 escape '\\')
+order by accountid limit 500`
             let response: { rows: AccountRow[] }
             try {
                 response = await PostgreSQL().query(sql, [`%${escapedTerm}%`])
