@@ -18,8 +18,16 @@ interface IAccount {
     service_type: string,
     internal_service_type: string
 }
+interface IPayment {
+    amount: number,
+    description: string,
+    journal: string,
+    period: string,
+    user: string,
+    date: Date
+}
 interface ValidationError {
     error: string
 }
 
-export type {ICustomer, ICustomerDetails, IAccount, ValidationError}
+export type {ICustomer, ICustomerDetails, IAccount, IPayment, ValidationError}

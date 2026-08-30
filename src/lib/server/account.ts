@@ -20,7 +20,7 @@ export const Account = () => {
                 accountid: row.accountid,
                 service_number: row.service_number,
                 service_type: row.service_type,
-                internal_service_type: row.internal_service_type,
+                internal_service_type: row.internal_service_type.toUpperCase(),
             }
             return object
         },

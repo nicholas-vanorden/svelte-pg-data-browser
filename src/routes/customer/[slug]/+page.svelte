@@ -1,11 +1,16 @@
 <script lang="ts">
     import { page } from "$app/state";
-    import type { ICustomerDetails } from "$lib/common/types";
+    import type { ICustomerDetails, IPayment } from "$lib/common/types";
+    import { formatPhoneNumber, formatTimePeriod } from "$lib/common/functions";
     import { onMount } from "svelte";
     import { showError } from '$lib/stores/error';
 
     let customerDetails: ICustomerDetails | null = $state(null)
     let loading = $state(true)
+    let selectedAccountId = $state<string | null>(null)
+    let payments = $state<IPayment[]>([])
+    let paymentsLoading = $state(false)
+    let paymentRequest = 0
     let groupedServices = $derived.by(() => {
         return groupAccountServices(customerDetails?.accountServices ?? [])
     })
@@ -51,6 +56,37 @@
         return Array.from(groups.values())
     }
 
+    async function selectAccount(accountid: string) {
+        selectedAccountId = accountid
+        payments = []
+        paymentsLoading = true
+        const request = ++paymentRequest
+
+        try {
+            const response = await fetch(`/api/payment/${encodeURIComponent(accountid)}`)
+            if (!response.ok) {
+                throw new Error(`Failed to load payments: ${response.status}`)
+            }
+
+            const json = await response.json()
+            if (!Array.isArray(json.payments)) {
+                throw new Error('Payment response missing payments')
+            }
+
+            if (request === paymentRequest) {
+                payments = json.payments
+            }
+        } catch (error: unknown) {
+            if (request === paymentRequest) {
+                showError(error instanceof Error ? error.message : String(error))
+            }
+        } finally {
+            if (request === paymentRequest) {
+                paymentsLoading = false
+            }
+        }
+    }
+
 </script>
 {#if loading}
     <p class="text-sm text-slate-500">Loading...</p>
@@ -74,7 +110,7 @@
 
         <div class="space-y-3">
             <div class="flex items-baseline justify-between">
-                <h3 class="text-xl font-semibold text-slate-900">Account Services</h3>
+                <h3 class="text-xl font-semibold text-slate-900">Accounts</h3>
                 <span class="text-sm text-slate-500">
                     {customerDetails.accountServices.length} services
                 </span>
@@ -85,23 +121,30 @@
                         <th>Account Id</th>
                         <th>Service Number</th>
                         <th>Service Type</th>
-                        <th>Internal Service Type</th>
                     </tr>
                 </thead>
                 <tbody>
                     {#if groupedServices.length > 0}
                         {#each groupedServices as group (group.key)}
-                            <tr class="!bg-white hover:!bg-white">
+                            <tr class="!bg-white hover:!bg-slate-100">
                                 <td>
-                                    {group.accountid}
+                                    <button
+                                        type="button"
+                                        class={selectedAccountId === group.accountid
+                                            ? 'text-base font-bold text-brand-700 hover:text-brand-800'
+                                            : 'font-medium text-brand-700 hover:text-brand-800'}
+                                        aria-pressed={selectedAccountId === group.accountid}
+                                        onclick={() => selectAccount(group.accountid)}
+                                    >
+                                        {group.accountid}
+                                    </button>
                                 </td>
-                                <td colspan="3"></td>
+                                <td colspan="2"></td>
                             </tr>
                             {#each group.services as service, index (`${group.key}::${service.service_number}::${service.internal_service_type}::${index}`)}
                                 <tr class="!bg-slate-50 even:!bg-slate-100">
                                     <td class="py-1"></td>
-                                    <td class="py-1">{service.service_number}</td>
-                                    <td class="py-1">{service.service_type}</td>
+                                    <td class="py-1">{formatPhoneNumber(service.service_number)}</td>
                                     <td class="py-1">{service.internal_service_type}</td>
                                 </tr>
                             {/each}
@@ -109,9 +152,56 @@
                     {:else}
                         <tr>
                             <td colspan="4" class="py-10 text-center text-sm text-slate-500">
-                                No account services found.
+                                No accounts found.
                             </td>
                         </tr>
+                    {/if}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="space-y-3">
+            <div class="flex items-baseline justify-between">
+                <h3 class="text-xl font-semibold text-slate-900">Billing</h3>
+                {#if selectedAccountId}
+                    <span class="text-sm text-slate-500">Account: {selectedAccountId}</span>
+                {/if}
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Period</th>
+                        <th class="text-right">Amount</th>
+                        <th>Posting Date</th>
+                        <th>Description</th>
+                        <th>Journal</th>
+                        <th>User</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {#if !selectedAccountId}
+                        <tr>
+                            <td colspan="6" class="py-10 text-center text-sm text-slate-500">Select an account to view its payments.</td>
+                        </tr>
+                    {:else if paymentsLoading}
+                        <tr>
+                            <td colspan="6" class="py-10 text-center text-sm text-slate-500">Loading payments...</td>
+                        </tr>
+                    {:else if payments.length === 0}
+                        <tr>
+                            <td colspan="6" class="py-10 text-center text-sm text-slate-500">No payments found for this account.</td>
+                        </tr>
+                    {:else}
+                        {#each payments as payment, index (`${payment.date}::${payment.journal}::${payment.description}::${index}`)}
+                            <tr>
+                                <td>{formatTimePeriod(payment.period)}</td>
+                                <td class="text-right">{payment.amount.toFixed(2)}</td>
+                                <td>{new Date(payment.date).toLocaleDateString()}</td>
+                                <td>{payment.description}</td>
+                                <td>{payment.journal}</td>
+                                <td>{payment.user}</td>
+                            </tr>
+                        {/each}
                     {/if}
                 </tbody>
             </table>
