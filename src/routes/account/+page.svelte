@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { formatPhoneNumber } from "$lib/common/functions";
     import type { IAccount } from '$lib/common/types';
     import type { PageData } from './$types';
     import { onDestroy } from 'svelte';
@@ -113,7 +114,6 @@
             <th scope="col">Customer</th>
             <th scope="col">Service Number</th>
             <th scope="col">Service Type</th>
-            <th scope="col">Internal Service Type</th>
         </tr>
     </thead>
     <tbody>
@@ -131,8 +131,7 @@
                     <tr class="!bg-slate-50 even:!bg-slate-100">
                         <td class="py-1"></td>
                         <td class="py-1"></td>
-                        <td class="py-1">{service.service_number}</td>
-                        <td class="py-1">{service.service_type}</td>
+                        <td class="py-1">{formatPhoneNumber(service.service_number)}</td>
                         <td class="py-1">{service.internal_service_type}</td>
                     </tr>
                 {/each}
