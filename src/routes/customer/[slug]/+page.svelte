@@ -10,6 +10,7 @@
     let selectedAccountId = $state<string | null>(null)
     let payments = $state<IPayment[]>([])
     let paymentsLoading = $state(false)
+    let paymentError = $state<string | null>(null)
     let paymentRequest = 0
     let groupedServices = $derived.by(() => {
         return groupAccountServices(customerDetails?.accountServices ?? [])
@@ -59,6 +60,7 @@
     async function selectAccount(accountid: string) {
         selectedAccountId = accountid
         payments = []
+        paymentError = null
         paymentsLoading = true
         const request = ++paymentRequest
 
@@ -78,7 +80,8 @@
             }
         } catch (error: unknown) {
             if (request === paymentRequest) {
-                showError(error instanceof Error ? error.message : String(error))
+                paymentError = error instanceof Error ? error.message : String(error)
+                showError(paymentError)
             }
         } finally {
             if (request === paymentRequest) {
@@ -186,6 +189,19 @@
                     {:else if paymentsLoading}
                         <tr>
                             <td colspan="6" class="py-10 text-center text-sm text-slate-500">Loading payments...</td>
+                        </tr>
+                    {:else if paymentError}
+                        <tr>
+                            <td colspan="6" class="py-10 text-center text-sm text-rose-600">
+                                <p>{paymentError}</p>
+                                <button
+                                    type="button"
+                                    class="mt-2 font-medium text-brand-700 hover:text-brand-800"
+                                    onclick={() => selectedAccountId && selectAccount(selectedAccountId)}
+                                >
+                                    Retry loading payments
+                                </button>
+                            </td>
                         </tr>
                     {:else if payments.length === 0}
                         <tr>
