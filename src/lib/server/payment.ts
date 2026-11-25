@@ -1,5 +1,6 @@
 import PostgreSQL from "$lib/server/db_postgresql"
 import type { IPayment } from "$lib/common/types"
+import { isInvoiceViewReady } from "$lib/server/schema"
 
 export const Payment = () => {
 
@@ -10,6 +11,9 @@ export const Payment = () => {
         period: string
         user: string
         date: Date
+        invoice_fileid: string | null
+        invoice_file: string | null
+        invoice_bill_date: Date | null
     }
 
     const api = {
@@ -21,12 +25,31 @@ export const Payment = () => {
                 period: row.period,
                 user: row.user,
                 date: row.date,
+                invoice: row.invoice_fileid
+                    ? {
+                        fileid: row.invoice_fileid,
+                        file: row.invoice_file ?? '',
+                        billDate: row.invoice_bill_date as Date,
+                    }
+                    : null,
             }
             return object
         },
         getAll: async (accountid: string): Promise<Array<IPayment>> => {
             const results: IPayment[] = []
-            const sql = `
+            // Use the invoice view when ensureSchema() has set it up; otherwise read
+            // pay_hist directly so payments still load (invoice comes back null).
+            let withInvoices = false
+            try {
+                withInvoices = await isInvoiceViewReady()
+            } catch (err) {
+                console.error(
+                    { errorMessage: err instanceof Error ? err.message : String(err) },
+                    "Payment.getAll: invoice view check failed; reading payments only"
+                )
+            }
+            const sql = withInvoices
+                ? `
 select
       amount
     , bill_desc as description
@@ -34,6 +57,23 @@ select
     , period
     , p."user" as user
     , post_date as date
+    , invoice_fileid
+    , invoice_file
+    , invoice_bill_date
+from public.pay_hist_invoice p
+where accountid = $1
+order by post_date desc`
+                : `
+select
+      amount
+    , bill_desc as description
+    , journal
+    , period
+    , p."user" as user
+    , post_date as date
+    , null::text as invoice_fileid
+    , null::text as invoice_file
+    , null::date as invoice_bill_date
 from public.pay_hist p
 where accountid = $1
 order by post_date desc`

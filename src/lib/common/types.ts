@@ -24,10 +24,16 @@ interface IPayment {
     journal: string,
     period: string,
     user: string,
-    date: Date
+    date: Date,
+    invoice: IInvoice | null
+}
+interface IInvoice {
+    fileid: string,
+    file: string,
+    billDate: Date
 }
 interface ValidationError {
     error: string
 }
 
-export type {ICustomer, ICustomerDetails, IAccount, IPayment, ValidationError}
+export type {ICustomer, ICustomerDetails, IAccount, IPayment, IInvoice, ValidationError}
