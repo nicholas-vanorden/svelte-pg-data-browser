@@ -1,5 +1,23 @@
 import { DBInstance } from '$lib/server/db_postgresql'
 
+// Set once the pay_hist_invoice view is known to exist. Only a positive result is cached,
+// so if setup was skipped at startup, reads keep checking and pick the view up once it appears.
+let invoiceViewReady = false
+
+/**
+ * True when public.pay_hist_invoice exists. Callers fall back to a payment-only read
+ * when it doesn't (ensureSchema skipped or failed).
+ */
+export async function isInvoiceViewReady(): Promise<boolean> {
+	if (invoiceViewReady) return true
+	const pool = (await DBInstance.getInstance()).getPool()
+	const { rows } = await pool.query<{ ok: boolean }>(
+		`select to_regclass('public.pay_hist_invoice') is not null as ok`
+	)
+	invoiceViewReady = rows[0]?.ok === true
+	return invoiceViewReady
+}
+
 /**
  * Idempotent schema additions the app relies on. Safe to run on every startup.
  *
@@ -84,6 +102,7 @@ export async function ensureSchema(): Promise<void> {
 			) f on true`)
 
 		await client.query('COMMIT')
+		invoiceViewReady = true
 		console.info('ensureSchema: invoice column, index and view are in place')
 	} catch (err) {
 		await client.query('ROLLBACK').catch(() => {})
