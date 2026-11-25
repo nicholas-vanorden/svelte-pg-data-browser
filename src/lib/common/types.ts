@@ -32,8 +32,17 @@ interface IInvoice {
     file: string,
     billDate: Date
 }
+interface IAccountInvoice {
+    fileid: string,
+    file: string,
+    billDate: Date,
+    period: string,
+    amountPaid: number,
+    paymentCount: number,
+    hasPdf: boolean
+}
 interface ValidationError {
     error: string
 }
 
-export type {ICustomer, ICustomerDetails, IAccount, IPayment, IInvoice, ValidationError}
+export type {ICustomer, ICustomerDetails, IAccount, IPayment, IInvoice, IAccountInvoice, ValidationError}
