@@ -11,6 +11,7 @@ This repo is a SvelteKit + TypeScript app that browses PostgreSQL tables (custom
    - `SECRET_PGHOST`
    - `SECRET_PGPORT`
    - `SECRET_PGDATABASE`
+   - `INVOICE_PDF_DIR` (folder containing the invoice PDFs)
 3. Install and run:
    - `npm install`
    - `npm run dev`
@@ -24,6 +25,8 @@ This repo is a SvelteKit + TypeScript app that browses PostgreSQL tables (custom
 - `src/routes/account/[slug]/+page.svelte` Account details
 - `src/routes/api/customer/search/+server.ts` Customer search API
 - `src/routes/api/customer/[slug]/+server.ts` Customer details API
+- `src/routes/api/payment/[accountid]/+server.ts` Payments (with linked invoice) for an account
+- `src/routes/api/invoice/[fileid]/+server.ts` Streams an invoice PDF
 - `src/routes/api/account/[slug]/+server.ts` Account details API
 - `src/routes/+layout.svelte` Global layout (breadcrumbs)
 - `src/app.css` Global Tailwind styles (table styling, base typography)
@@ -39,8 +42,14 @@ This repo is a SvelteKit + TypeScript app that browses PostgreSQL tables (custom
 
 ## Database Notes
 
-- No migrations or seed scripts exist; schema/data must be created externally.
-- The app expects existing `customers` and `accounts` tables (see server routes for fields used).
+- Tables and data are loaded externally by go-csv2pg-migrator (it truncates, never drops).
+- The app expects existing `customers`, `accounts`, `pay_hist` and `files` (invoice records) tables.
+- On startup `src/hooks.server.ts` (`init`) runs `ensureSchema()` from `src/lib/server/schema.ts`, which idempotently adds:
+  - `files.bill_period` — generated YYYYMM text from `billdt`
+  - index `files_accountid_bill_period_idx`
+  - view `pay_hist_invoice` — each payment plus the invoice it paid (`accountid` + `period` = `bill_period`)
+  If `files` or `pay_hist` doesn't exist yet it logs a warning and skips; restart after loading.
+- Invoice PDFs are served by `src/routes/api/invoice/[fileid]/+server.ts` from `INVOICE_PDF_DIR` (set in `.env`).
 
 ## Common Scripts
 

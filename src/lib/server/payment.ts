@@ -10,6 +10,9 @@ export const Payment = () => {
         period: string
         user: string
         date: Date
+        invoice_fileid: string | null
+        invoice_file: string | null
+        invoice_bill_date: Date | null
     }
 
     const api = {
@@ -21,6 +24,13 @@ export const Payment = () => {
                 period: row.period,
                 user: row.user,
                 date: row.date,
+                invoice: row.invoice_fileid
+                    ? {
+                        fileid: row.invoice_fileid,
+                        file: row.invoice_file ?? '',
+                        billDate: row.invoice_bill_date as Date,
+                    }
+                    : null,
             }
             return object
         },
@@ -34,7 +44,10 @@ select
     , period
     , p."user" as user
     , post_date as date
-from public.pay_hist p
+    , invoice_fileid
+    , invoice_file
+    , invoice_bill_date
+from public.pay_hist_invoice p
 where accountid = $1
 order by post_date desc`
             let response: { rows: PaymentRow[] }

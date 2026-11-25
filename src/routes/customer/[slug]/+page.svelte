@@ -179,20 +179,21 @@
                         <th>Description</th>
                         <th>Journal</th>
                         <th>User</th>
+                        <th>Invoice</th>
                     </tr>
                 </thead>
                 <tbody>
                     {#if !selectedAccountId}
                         <tr>
-                            <td colspan="6" class="py-10 text-center text-sm text-slate-500">Select an account to view its payments.</td>
+                            <td colspan="7" class="py-10 text-center text-sm text-slate-500">Select an account to view its payments.</td>
                         </tr>
                     {:else if paymentsLoading}
                         <tr>
-                            <td colspan="6" class="py-10 text-center text-sm text-slate-500">Loading payments...</td>
+                            <td colspan="7" class="py-10 text-center text-sm text-slate-500">Loading payments...</td>
                         </tr>
                     {:else if paymentError}
                         <tr>
-                            <td colspan="6" class="py-10 text-center text-sm text-rose-600">
+                            <td colspan="7" class="py-10 text-center text-sm text-rose-600">
                                 <p>{paymentError}</p>
                                 <button
                                     type="button"
@@ -205,7 +206,7 @@
                         </tr>
                     {:else if payments.length === 0}
                         <tr>
-                            <td colspan="6" class="py-10 text-center text-sm text-slate-500">No payments found for this account.</td>
+                            <td colspan="7" class="py-10 text-center text-sm text-slate-500">No payments found for this account.</td>
                         </tr>
                     {:else}
                         {#each payments as payment, index (`${payment.date}::${payment.journal}::${payment.description}::${index}`)}
@@ -216,6 +217,21 @@
                                 <td>{payment.description}</td>
                                 <td>{payment.journal}</td>
                                 <td>{payment.user}</td>
+                                <td>
+                                    {#if payment.invoice}
+                                        <a
+                                            href={`/api/invoice/${encodeURIComponent(payment.invoice.fileid)}`}
+                                            target="_blank"
+                                            rel="noopener"
+                                            class="font-medium text-brand-700 hover:text-brand-800"
+                                            title={payment.invoice.file}
+                                        >
+                                            View PDF
+                                        </a>
+                                    {:else}
+                                        <span class="text-slate-400">—</span>
+                                    {/if}
+                                </td>
                             </tr>
                         {/each}
                     {/if}
