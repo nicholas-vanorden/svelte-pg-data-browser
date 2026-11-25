@@ -57,6 +57,8 @@ This repo is a SvelteKit + TypeScript app that browses PostgreSQL tables (custom
 - `npm run dev` Start dev server
 - `npm run build` Production build
 - `npm run preview` Preview production build
+- `npm start` Run the production build (`node --env-file=.env build`, adapter-node)
+- `npm run package` Build and create a deployment zip in `dist/` (see `DEPLOY.md`)
 
 ## Troubleshooting
 
