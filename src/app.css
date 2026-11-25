@@ -52,3 +52,15 @@
 		@apply border-b-0;
 	}
 }
+
+@layer components {
+	/* Tighter rows for dense data tables. :where() keeps specificity low so
+	   utilities on a cell (e.g. py-10 on empty-state rows) still win. */
+	.table-compact :where(thead th) {
+		@apply py-2;
+	}
+
+	.table-compact :where(tbody td) {
+		@apply py-1.5;
+	}
+}

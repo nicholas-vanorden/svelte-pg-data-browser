@@ -27,6 +27,7 @@ This repo is a SvelteKit + TypeScript app that browses PostgreSQL tables (custom
 - `src/routes/api/customer/[slug]/+server.ts` Customer details API
 - `src/routes/api/payment/[accountid]/+server.ts` Payments (with linked invoice) for an account
 - `src/routes/api/invoice/[fileid]/+server.ts` Streams an invoice PDF
+- `src/routes/api/account/[accountid]/invoices/+server.ts` All invoices on file for an account (with amount paid in each period and whether the PDF is on disk)
 - `src/routes/api/account/[slug]/+server.ts` Account details API
 - `src/routes/+layout.svelte` Global layout (breadcrumbs)
 - `src/app.css` Global Tailwind styles (table styling, base typography)

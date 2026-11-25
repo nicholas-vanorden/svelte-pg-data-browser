@@ -32,3 +32,10 @@ export function formatTimePeriod(p: string): string {
 
 	return `${months[month - 1]} ${year}`;
 }
+
+/** Rows for a 1-based page; pageSize 0 returns every row ("All"). */
+export function pageSlice<T>(rows: T[], page: number, pageSize: number): T[] {
+	if (pageSize <= 0) return rows;
+	const start = (Math.max(1, page) - 1) * pageSize;
+	return rows.slice(start, start + pageSize);
+}

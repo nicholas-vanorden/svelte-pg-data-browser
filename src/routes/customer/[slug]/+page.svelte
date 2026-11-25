@@ -1,7 +1,8 @@
 <script lang="ts">
     import { page } from "$app/state";
-    import type { ICustomerDetails, IPayment } from "$lib/common/types";
-    import { formatPhoneNumber, formatTimePeriod } from "$lib/common/functions";
+    import type { IAccountInvoice, ICustomerDetails, IPayment } from "$lib/common/types";
+    import { formatPhoneNumber, formatTimePeriod, pageSlice } from "$lib/common/functions";
+    import TablePager from "$lib/components/TablePager.svelte";
     import { onMount } from "svelte";
     import { showError } from '$lib/stores/error';
 
@@ -12,6 +13,16 @@
     let paymentsLoading = $state(false)
     let paymentError = $state<string | null>(null)
     let paymentRequest = 0
+    let invoices = $state<IAccountInvoice[]>([])
+    let invoicesLoading = $state(false)
+    let invoiceError = $state<string | null>(null)
+    let invoiceRequest = 0
+    let paymentPage = $state(1)
+    let paymentPageSize = $state(10)
+    let invoicePage = $state(1)
+    let invoicePageSize = $state(10)
+    let pagedPayments = $derived(pageSlice(payments, paymentPage, paymentPageSize))
+    let pagedInvoices = $derived(pageSlice(invoices, invoicePage, invoicePageSize))
     let groupedServices = $derived.by(() => {
         return groupAccountServices(customerDetails?.accountServices ?? [])
     })
@@ -57,9 +68,45 @@
         return Array.from(groups.values())
     }
 
+    async function loadInvoices(accountid: string) {
+        invoices = []
+        invoicePage = 1
+        invoiceError = null
+        invoicesLoading = true
+        const request = ++invoiceRequest
+
+        try {
+            const response = await fetch(`/api/account/${encodeURIComponent(accountid)}/invoices`)
+            if (!response.ok) {
+                throw new Error(`Failed to load invoices: ${response.status}`)
+            }
+
+            const json = await response.json()
+            if (!Array.isArray(json.invoices)) {
+                throw new Error('Invoice response missing invoices')
+            }
+
+            if (request === invoiceRequest) {
+                invoices = json.invoices
+            }
+        } catch (error: unknown) {
+            if (request === invoiceRequest) {
+                invoiceError = error instanceof Error ? error.message : String(error)
+                showError(invoiceError)
+            }
+        } finally {
+            if (request === invoiceRequest) {
+                invoicesLoading = false
+            }
+        }
+    }
+
     async function selectAccount(accountid: string) {
         selectedAccountId = accountid
+        // Invoices load alongside payments; each table has its own loading/error state.
+        void loadInvoices(accountid)
         payments = []
+        paymentPage = 1
         paymentError = null
         paymentsLoading = true
         const request = ++paymentRequest
@@ -170,7 +217,7 @@
                     <span class="text-sm text-slate-500">Account: {selectedAccountId}</span>
                 {/if}
             </div>
-            <table>
+            <table class="table-compact">
                 <thead>
                     <tr>
                         <th>Period</th>
@@ -209,7 +256,7 @@
                             <td colspan="7" class="py-10 text-center text-sm text-slate-500">No payments found for this account.</td>
                         </tr>
                     {:else}
-                        {#each payments as payment, index (`${payment.date}::${payment.journal}::${payment.description}::${index}`)}
+                        {#each pagedPayments as payment, index (`${payment.date}::${payment.journal}::${payment.description}::${index}`)}
                             <tr>
                                 <td>{formatTimePeriod(payment.period)}</td>
                                 <td class="text-right">{payment.amount.toFixed(2)}</td>
@@ -237,6 +284,94 @@
                     {/if}
                 </tbody>
             </table>
+            <TablePager
+                total={paymentsLoading || paymentError ? 0 : payments.length}
+                bind:page={paymentPage}
+                bind:pageSize={paymentPageSize}
+                label="payments"
+            />
+        </div>
+
+        <div class="space-y-3">
+            <div class="flex items-baseline justify-between">
+                <h3 class="text-xl font-semibold text-slate-900">Invoices</h3>
+                {#if selectedAccountId && !invoicesLoading && !invoiceError}
+                    <span class="text-sm text-slate-500">{invoices.length} on file</span>
+                {/if}
+            </div>
+            <table class="table-compact">
+                <thead>
+                    <tr>
+                        <th>Bill Date</th>
+                        <th>Period</th>
+                        <th class="text-right">Paid in Period</th>
+                        <th>Invoice</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {#if !selectedAccountId}
+                        <tr>
+                            <td colspan="4" class="py-10 text-center text-sm text-slate-500">Select an account to view its invoices.</td>
+                        </tr>
+                    {:else if invoicesLoading}
+                        <tr>
+                            <td colspan="4" class="py-10 text-center text-sm text-slate-500">Loading invoices...</td>
+                        </tr>
+                    {:else if invoiceError}
+                        <tr>
+                            <td colspan="4" class="py-10 text-center text-sm text-rose-600">
+                                <p>{invoiceError}</p>
+                                <button
+                                    type="button"
+                                    class="mt-2 font-medium text-brand-700 hover:text-brand-800"
+                                    onclick={() => selectedAccountId && loadInvoices(selectedAccountId)}
+                                >
+                                    Retry loading invoices
+                                </button>
+                            </td>
+                        </tr>
+                    {:else if invoices.length === 0}
+                        <tr>
+                            <td colspan="4" class="py-10 text-center text-sm text-slate-500">No invoices on file for this account.</td>
+                        </tr>
+                    {:else}
+                        {#each pagedInvoices as invoice (invoice.fileid)}
+                            <tr>
+                                <td>{new Date(invoice.billDate).toLocaleDateString()}</td>
+                                <td>{formatTimePeriod(invoice.period)}</td>
+                                <td class="text-right">
+                                    {#if invoice.paymentCount > 0}
+                                        {invoice.amountPaid.toFixed(2)}
+                                    {:else}
+                                        <span class="text-slate-400">—</span>
+                                    {/if}
+                                </td>
+                                <td>
+                                    {#if invoice.hasPdf}
+                                        <a
+                                            href={`/api/invoice/${encodeURIComponent(invoice.fileid)}`}
+                                            target="_blank"
+                                            rel="noopener"
+                                            class="font-medium text-brand-700 hover:text-brand-800"
+                                            title={invoice.file}
+                                        >
+                                            View PDF
+                                        </a>
+                                    {:else}
+                                        <span class="text-slate-400" title={invoice.file}>PDF not found</span>
+                                    {/if}
+                                </td>
+                            </tr>
+                        {/each}
+                    {/if}
+                </tbody>
+            </table>
+            <TablePager
+                total={invoicesLoading || invoiceError ? 0 : invoices.length}
+                bind:page={invoicePage}
+                bind:pageSize={invoicePageSize}
+                label="invoices"
+            />
         </div>
     </section>
 {:else}
