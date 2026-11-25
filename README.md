@@ -63,3 +63,15 @@ Styling notes:
 
 - Tailwind CSS is configured via `tailwind.config.cjs` and `postcss.config.cjs`.
 - Global styles live in `src/app.css` and are imported in `src/routes/+layout.svelte`.
+
+## Deployment
+
+Build a self-contained package for the production server:
+
+```bash
+npm run package
+```
+
+This writes `dist/svelte-pg-data-browser-<version>-<timestamp>.zip` (build output plus production
+`node_modules`). Copy it to the server, extract it and follow `DEPLOY.md` inside. The server needs
+nothing installed: when packaged on Windows the zip includes `node\node.exe` and a `start.cmd`.
